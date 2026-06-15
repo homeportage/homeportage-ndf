@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Note de Frais — Home Portage</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f4f4; min-height: 100vh; padding: 16px; }
+  .page { max-width: 480px; margin: 0 auto; }
+  .form-wrap { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  .header { background: #00B4A0; padding: 18px 16px; text-align: center; }
+  .header h1 { color: #fff; font-size: 20px; font-weight: 600; }
+  .header p { color: rgba(255,255,255,0.85); font-size: 12px; margin-top: 4px; }
+  .info-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; border-bottom: 0.5px solid #e5e5e5; }
+  .field-group { display: flex; flex-direction: column; gap: 4px; }
+  .field-group label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
+  .field-group input, .field-group select { font-size: 13px; border: 1px solid #ddd; border-radius: 6px; padding: 7px 9px; background: #fafafa; color: #111; width: 100%; }
+  .field-group input:focus, .field-group select:focus { outline: none; border-color: #00B4A0; background: #fff; }
+  .periode-row { padding: 8px 12px; border-bottom: 0.5px solid #e5e5e5; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .hint-row { padding: 6px 12px; background: #fffbea; border-bottom: 0.5px solid #f0e68c; font-size: 11px; color: #7a6400; }
+  .section-title { background: #f7f7f7; padding: 8px 12px; font-size: 11px; font-weight: 600; color: #666; text-transform: uppercase; letter-spacing: 0.8px; border-bottom: 0.5px solid #e5e5e5; border-top: 0.5px solid #e5e5e5; margin-top: 4px; }
+  .col-header { font-size: 10px; color: #aaa; text-align: center; padding: 4px 12px; background: #fafafa; display: grid; grid-template-columns: 1fr 70px 60px 75px; gap: 4px; border-bottom: 0.5px solid #e5e5e5; }
+  .expense-row { display: grid; grid-template-columns: 1fr 70px 60px 75px; gap: 4px; padding: 6px 12px; border-bottom: 0.5px solid #f0f0f0; align-items: center; }
+  .row-label { font-size: 12px; color: #222; line-height: 1.3; }
+  .row-label small { font-size: 10px; color: #999; display: block; }
+  .num-input { font-size: 12px; border: 1px solid #ddd; border-radius: 4px; padding: 5px 6px; background: #fafafa; color: #111; width: 100%; text-align: right; }
+  .num-input:focus { outline: none; border-color: #00B4A0; background: #fff; }
+  .num-input.calc { background: #f0faf8; color: #0a6b58; border-color: #b0e5d8; }
+  .elec-toggle { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #f0fbf8; border-bottom: 0.5px solid #c8ede6; border-top: 0.5px solid #c8ede6; margin-top: 4px; }
+  .elec-toggle input[type=checkbox] { width: 18px; height: 18px; accent-color: #00B4A0; cursor: pointer; flex-shrink: 0; }
+  .elec-toggle label { font-size: 13px; color: #0a6b58; cursor: pointer; font-weight: 500; }
+  .elec-badge { display: inline-block; font-size: 10px; font-weight: 600; background: #00B4A0; color: #fff; border-radius: 4px; padding: 2px 6px; margin-left: 6px; }
+  .km-row { padding: 10px 12px; border-bottom: 0.5px solid #e5e5e5; }
+  .km-row > label { font-size: 11px; color: #888; display: block; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .km-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items: end; }
+  #km-detail { margin-top: 10px; font-size: 12px; color: #666; background: #fafafa; border-radius: 8px; padding: 9px 11px; line-height: 2; border: 1px solid #eee; }
+  .total-row { display: grid; grid-template-columns: 1fr 70px 60px 75px; gap: 4px; padding: 12px; background: #00B4A0; align-items: center; }
+  .total-label { font-size: 14px; font-weight: 600; color: #fff; text-decoration: underline; }
+  .total-val { font-size: 13px; font-weight: 600; color: #fff; text-align: right; padding: 0 4px; }
+  .sig-section { padding: 14px 12px; }
+  .sig-section > label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px; }
+  .sig-note { font-size: 11px; color: #aaa; margin-bottom: 8px; }
+  #sig-canvas { border: 1.5px dashed #ccc; border-radius: 8px; background: #fafafa; width: 100%; height: 130px; cursor: crosshair; touch-action: none; display: block; }
+  #sig-canvas.has-sig { border-color: #00B4A0; border-style: solid; }
+  .sig-actions { display: flex; gap: 8px; margin-top: 10px; }
+  .btn-clear { font-size: 13px; color: #888; border: 1px solid #ddd; border-radius: 8px; padding: 10px 14px; background: #fff; cursor: pointer; flex: 1; }
+  .btn-send { font-size: 14px; font-weight: 600; color: #fff; background: #00B4A0; border: none; border-radius: 8px; padding: 12px 18px; cursor: pointer; flex: 2; }
+  .btn-send:disabled { background: #aaa; cursor: not-allowed; }
+  .toast { display: none; font-size: 13px; padding: 11px 14px; border-radius: 8px; margin-top: 10px; text-align: center; font-weight: 500; }
+  .toast.success { background: #e6f9f5; color: #0a6b58; border: 1px solid #b0e5d8; }
+  .toast.error { background: #fef0f0; color: #b00; border: 1px solid #f5c0c0; }
+  .footer-note { font-size: 11px; color: #bbb; text-align: center; padding: 12px; border-top: 0.5px solid #f0f0f0; }
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; margin-right: 6px; vertical-align: middle; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="page">
+<div class="form-wrap">
+
+  <div class="header">
+    <h1>NOTE DE FRAIS</h1>
+    <p>Tous les frais doivent être directement liés à votre activité</p>
+  </div>
+
+  <div class="info-row">
+    <div class="field-group"><label>Nom</label><input type="text" id="nom" placeholder="Dupont" autocomplete="family-name"></div>
+    <div class="field-group"><label>Prénom</label><input type="text" id="prenom" placeholder="Jean" autocomplete="given-name"></div>
+  </div>
+  <div class="periode-row">
+    <div class="field-group"><label>Période du</label><input type="date" id="date-debut"></div>
+    <div class="field-group"><label>Au</label><input type="date" id="date-fin"></div>
+  </div>
+
+  <div class="hint-row">💡 Saisissez le montant en HT, TVA ou TTC — les autres colonnes se calculent automatiquement.</div>
+
+  <div class="col-header"><span></span><span>H.T. (€)</span><span>TVA (€)</span><span>T.T.C (€)</span></div>
+
+  <div class="section-title">Frais de fonctionnement</div>
+  <div class="expense-row" data-tva="0.2" data-label="Publicité"><span class="row-label">Publicité</span><input class="num-input ht" type="number" placeholder="0.00" min="0" step="0.01"><input class="num-input tva" type="number" placeholder="0.00" min="0" step="0.01"><input class="num-input ttc" type="number" placeholder="0.00" min="0" step="0.01"></div>
+  <div class="expense-row" data-tva="0.2" data-label="Téléphone"><span class="row-label">Téléphone</span><input class="num-input ht" type="number" placeholder="0.00" min="0" step="0.01"><input class="num-input tva" type="number" placeholder="0.00" min="0" step="0.01"><input class="num-input ttc" type="number" placeholder="0.00" min="0" step="0.01"></div>
+  <div class="expense-row" data-tva="0.2" data-label="Fournitures administratives"><span class="row-label">Fournitures administratives</span><input class="num-input ht" type="number" placeholder="0.00" min="0" step="0.01"><input class="num-input tva" type="number" placeholder="0.00" min="0" step="0.01"><input class="num-input ttc" type="number" placeholder="0.00" min="0" step="0.01"></div>
+  <div class="expense-row" data-tva="0.2" data-label="Frais annuels / uniques (RCP, TPE...)"><span class="row-label">Frais annuels / uniques<small>RCP, TPE…</small></span><input class="num-input ht" type="number" placeholder="0.00" min="0" step="0.01"><input class="num-input tva" type="number" placeholder="0.00" min="0" step="0.01"><input class="num-input ttc" type="number" placeholder="0.00" min="0" step="0.01"></div>
+  <div class="expense-row" data-tva="0.2" data-label="Location local"><span class="row-label">Location local<small>selon l'activité</small></span><input class="num-input ht" type="number" placeholder="0.00" min="0" step="0.01"><input class="num-input tva" type="number" placeholder="0.00" min="0" step="0.01"><input class="num-input ttc" type="number" placeholder="0.00" min="0" step="0.01"></div>
+  <div class="expense-row" data-tva="0.2" data-label="Confort véhicule"><span class="row-label">Confort véhicule<small>selon l'activité</small></span><input class="num-input ht" type="number" placeholder="0.00" min="0" step="0.01"><input class="num-input tva" type="number" placeholder="0.00" min="0" step="0.01"><input class="num-input ttc" type="number" placeholder="0.00" min="0" step="0.01"></div>
+
+  <div class="section-title">Frais du porté</div>
+  <div class="expense-row" data-tva="0.1" data-label="Repas"><span class="row-label">Repas</span><input class="num-input ht" type="number" placeholder="0.00" min="0" step="0.01"><input class="num-input tva" type="number" placeholder="0.00" min="0" step="0.01"><input class="num-input ttc" type="number" placeholder="0.00" min="0" step="0.01"></div>
+  <div class="expense-row" data-tva="0.2" data-label="Pressing"><span class="row-label">Pressing</span><input class="num-input ht" type="number" placeholder="0.00" min="0" step="0.01"><input class="num-input tva" type="number" placeholder="0.00" min="0" step="0.01"><input class="num-input ttc" type="number" placeholder="0.00" min="0" step="0.01"></div>
+  <div class="expense-row" data-tva="0.2" data-label="Vêtements (1 tenue/an)"><span class="row-label">Vêtements<small>1 tenue par an</small></span><input class="num-input ht" type="number" placeholder="0.00" min="0" step="0.01"><input class="num-input tva" type="number" placeholder="0.00" min="0" step="0.01"><input class="num-input ttc" type="number" placeholder="0.00" min="0" step="0.01"></div>
+  <div class="expense-row" data-tva="0.2" data-label="Coiffeur"><span class="row-label">Coiffeur</span><input class="num-input ht" type="number" placeholder="0.00" min="0" step="0.01"><input class="num-input tva" type="number" placeholder="0.00" min="0" step="0.01"><input class="num-input ttc" type="number" placeholder="0.00" min="0" step="0.01"></div>
+
+  <div class="section-title">Frais de déplacement</div>
+  <div class="expense-row" data-tva="0.2" data-label="Avion / Train / Hôtel"><span class="row-label">Avion / Train / Hôtel</span><input class="num-input ht" type="number" placeholder="0.00" min="0" step="0.01"><input class="num-input tva" type="number" placeholder="0.00" min="0" step="0.01"><input class="num-input ttc" type="number" placeholder="0.00" min="0" step="0.01"></div>
+  <div class="expense-row" data-tva="0.2" data-label="Parking / Autoroute / Lavage"><span class="row-label">Parking / Autoroute / Lavage</span><input class="num-input ht" type="number" placeholder="0.00" min="0" step="0.01"><input class="num-input tva" type="number" placeholder="0.00" min="0" step="0.01"><input class="num-input ttc" type="number" placeholder="0.00" min="0" step="0.01"></div>
+  <div class="expense-row" data-tva="0.2" data-label="Frais réels véhicule"><span class="row-label">Frais réels<small>location, carburant, entretien, assurance…</small></span><input class="num-input ht" type="number" placeholder="0.00" min="0" step="0.01"><input class="num-input tva" type="number" placeholder="0.00" min="0" step="0.01"><input class="num-input ttc" type="number" placeholder="0.00" min="0" step="0.01"></div>
+
+  <div class="elec-toggle">
+    <input type="checkbox" id="elec-check">
+    <label for="elec-check">⚡ Véhicule électrique — majoration barème +20%<span class="elec-badge">+20%</span></label>
+  </div>
+
+  <div class="km-row">
+    <label>Indemnités kilométriques (OU frais réels — pas les deux)</label>
+    <div class="km-inputs">
+      <div class="field-group"><label>Nombre de km</label><input class="num-input" type="number" id="km-nb" placeholder="0" min="0" step="1"></div>
+      <div class="field-group">
+        <label>Puissance (carte grise P.6)</label>
+        <select id="km-bareme">
+          <option value="0.370">≤ 3CV — 0.370 €/km</option>
+          <option value="0.407">4CV — 0.407 €/km</option>
+          <option value="0.427">5CV — 0.427 €/km</option>
+          <option value="0.447">6CV — 0.447 €/km</option>
+          <option value="0.470">≥ 7CV — 0.470 €/km</option>
+        </select>
+      </div>
+    </div>
+    <div id="km-detail">
+      Barème de base : <span id="km-base-rate">0.370</span> €/km<br>
+      <span id="km-elec-line" style="display:none;color:#0a6b58;">⚡ Majoration (+20%) : +<span id="km-elec-plus">0.000</span> €/km<br></span>
+      Taux appliqué : <strong id="km-applied-rate">0.370</strong> €/km<br>
+      Indemnité : <strong id="km-result" style="color:#00B4A0;">0.00 €</strong> <span style="font-size:10px;color:#aaa;">(sans TVA)</span>
+    </div>
+  </div>
+
+  <div class="section-title">Autres</div>
+  <div class="expense-row" data-tva="0.2" data-label="autres">
+    <input type="text" class="num-input" id="autres-label" placeholder="Libellé" style="font-size:12px;text-align:left;">
+    <input class="num-input ht" type="number" placeholder="0.00" min="0" step="0.01">
+    <input class="num-input tva" type="number" placeholder="0.00" min="0" step="0.01">
+    <input class="num-input ttc" type="number" placeholder="0.00" min="0" step="0.01">
+  </div>
+
+  <div class="total-row">
+    <span class="total-label">TOTAL</span>
+    <span class="total-val" id="tot-ht">0.00</span>
+    <span class="total-val" id="tot-tva">0.00</span>
+    <span class="total-val" id="tot-ttc">0.00</span>
+  </div>
+
+  <div class="sig-section">
+    <label>Signature manuscrite <span style="color:#e00">*</span> obligatoire</label>
+    <p class="sig-note">Signez avec le doigt (ou la souris) dans la zone ci-dessous</p>
+    <canvas id="sig-canvas" width="440" height="130"></canvas>
+    <div class="sig-actions">
+      <button class="btn-clear" onclick="clearSig()">↺ Effacer</button>
+      <button class="btn-send" id="btn-send" onclick="envoyerNDF()">✉ Envoyer ma note de frais</button>
+    </div>
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <div class="footer-note">Le PDF signé sera généré et envoyé automatiquement à Home Portage. Conservez vos justificatifs.</div>
+
+</div>
+</div>
+
+<script>
+// --- Signature ---
+const canvas = document.getElementById('sig-canvas');
+const ctx = canvas.getContext('2d');
+let drawing = false, hasSig = false;
+ctx.strokeStyle = '#00B4A0'; ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+function resizeCanvas() { canvas.style.width = (canvas.parentElement.clientWidth - 24) + 'px'; }
+resizeCanvas(); window.addEventListener('resize', resizeCanvas);
+function getPos(e) {
+  const rect = canvas.getBoundingClientRect();
+  const sx = canvas.width/rect.width, sy = canvas.height/rect.height;
+  if (e.touches) return { x:(e.touches[0].clientX-rect.left)*sx, y:(e.touches[0].clientY-rect.top)*sy };
+  return { x:(e.clientX-rect.left)*sx, y:(e.clientY-rect.top)*sy };
+}
+canvas.addEventListener('mousedown', e=>{ drawing=true; ctx.beginPath(); const p=getPos(e); ctx.moveTo(p.x,p.y); });
+canvas.addEventListener('mousemove', e=>{ if(!drawing)return; const p=getPos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); markSig(); });
+canvas.addEventListener('mouseup', ()=>drawing=false);
+canvas.addEventListener('mouseleave', ()=>drawing=false);
+canvas.addEventListener('touchstart', e=>{ e.preventDefault(); drawing=true; ctx.beginPath(); const p=getPos(e); ctx.moveTo(p.x,p.y); },{passive:false});
+canvas.addEventListener('touchmove', e=>{ e.preventDefault(); if(!drawing)return; const p=getPos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); markSig(); },{passive:false});
+canvas.addEventListener('touchend', ()=>drawing=false);
+function markSig(){ hasSig=true; canvas.classList.add('has-sig'); }
+function clearSig(){ ctx.clearRect(0,0,canvas.width,canvas.height); hasSig=false; canvas.classList.remove('has-sig'); }
+
+// --- Calcul bidirectionnel ---
+function bindRow(row) {
+  const htI=row.querySelector('.ht'), tvaI=row.querySelector('.tva'), ttcI=row.querySelector('.ttc');
+  if(!htI||!tvaI||!ttcI) return;
+  const rate=parseFloat(row.dataset.tva)||0.2;
+  function flash(arr){ arr.forEach(i=>i.classList.add('calc')); setTimeout(()=>arr.forEach(i=>i.classList.remove('calc')),800); }
+  htI.addEventListener('input',()=>{
+    const v=parseFloat(htI.value); if(isNaN(v)||htI.value===''){tvaI.value='';ttcI.value='';updateTotals();return;}
+    tvaI.value=(v*rate).toFixed(2); ttcI.value=(v*(1+rate)).toFixed(2); flash([tvaI,ttcI]); updateTotals();
+  });
+  tvaI.addEventListener('input',()=>{
+    const v=parseFloat(tvaI.value); if(isNaN(v)||tvaI.value===''){htI.value='';ttcI.value='';updateTotals();return;}
+    const ht=v/rate; htI.value=ht.toFixed(2); ttcI.value=(ht+v).toFixed(2); flash([htI,ttcI]); updateTotals();
+  });
+  ttcI.addEventListener('input',()=>{
+    const v=parseFloat(ttcI.value); if(isNaN(v)||ttcI.value===''){htI.value='';tvaI.value='';updateTotals();return;}
+    const ht=v/(1+rate); tvaI.value=(v-ht).toFixed(2); htI.value=ht.toFixed(2); flash([htI,tvaI]); updateTotals();
+  });
+}
+document.querySelectorAll('.expense-row').forEach(row=>bindRow(row));
+
+// --- KM ---
+function calcKm(){
+  const nb=parseFloat(document.getElementById('km-nb').value)||0;
+  const base=parseFloat(document.getElementById('km-bareme').value)||0;
+  const elec=document.getElementById('elec-check').checked;
+  const bonus=elec?base*0.2:0, rate=base+bonus, result=nb*rate;
+  document.getElementById('km-base-rate').textContent=base.toFixed(3);
+  document.getElementById('km-applied-rate').textContent=rate.toFixed(3);
+  document.getElementById('km-result').textContent=result.toFixed(2)+' €';
+  const el=document.getElementById('km-elec-line');
+  if(elec){document.getElementById('km-elec-plus').textContent=bonus.toFixed(3);el.style.display='block';}
+  else el.style.display='none';
+  return result;
+}
+function updateTotals(){
+  let tHt=0,tTva=0,tTtc=0;
+  document.querySelectorAll('.expense-row').forEach(row=>{
+    tHt+=parseFloat(row.querySelector('.ht')?.value)||0;
+    tTva+=parseFloat(row.querySelector('.tva')?.value)||0;
+    tTtc+=parseFloat(row.querySelector('.ttc')?.value)||0;
+  });
+  const km=calcKm(); tHt+=km; tTtc+=km;
+  document.getElementById('tot-ht').textContent=tHt.toFixed(2);
+  document.getElementById('tot-tva').textContent=tTva.toFixed(2);
+  document.getElementById('tot-ttc').textContent=tTtc.toFixed(2);
+}
+document.getElementById('km-nb').addEventListener('input',updateTotals);
+document.getElementById('km-bareme').addEventListener('change',updateTotals);
+document.getElementById('elec-check').addEventListener('change',updateTotals);
+
+// --- Envoi ---
+async function envoyerNDF(){
+  const nom=document.getElementById('nom').value.trim();
+  const prenom=document.getElementById('prenom').value.trim();
+  const debut=document.getElementById('date-debut').value;
+  const fin=document.getElementById('date-fin').value;
+  const isElec=document.getElementById('elec-check').checked;
+
+  if(!nom||!prenom){showToast('Veuillez saisir votre nom et prénom.',true);return;}
+  if(!debut||!fin){showToast('Veuillez renseigner la période.',true);return;}
+  if(!hasSig){showToast('Veuillez signer le formulaire.',true);return;}
+
+  const btn=document.getElementById('btn-send');
+  btn.disabled=true;
+  btn.innerHTML='<span class="spinner"></span>Envoi en cours...';
+
+  const rows=[];
+  document.querySelectorAll('.expense-row').forEach(row=>{
+    const label=row.dataset.label||'';
+    const ht=parseFloat(row.querySelector('.ht')?.value)||0;
+    const tva=parseFloat(row.querySelector('.tva')?.value)||0;
+    const ttc=parseFloat(row.querySelector('.ttc')?.value)||0;
+    const labelText = label==='autres' ? (document.getElementById('autres-label').value||'Autre') : label;
+    rows.push({label, labelText, ht, tva, ttc});
+  });
+
+  const payload={
+    nom, prenom, debut, fin, isElec,
+    rows,
+    kmNb: parseFloat(document.getElementById('km-nb').value)||0,
+    kmRate: document.getElementById('km-applied-rate').textContent,
+    kmResult: parseFloat(document.getElementById('km-result').textContent)||0,
+    totHt: document.getElementById('tot-ht').textContent,
+    totTva: document.getElementById('tot-tva').textContent,
+    totTtc: document.getElementById('tot-ttc').textContent,
+    signature: canvas.toDataURL('image/png')
+  };
+
+  try {
+    const res = await fetch('/.netlify/functions/envoyer-ndf', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if(res.ok && data.success){
+      showToast('✅ Note de frais envoyée avec succès ! Le PDF signé a été transmis à Home Portage.', false);
+      btn.innerHTML='✉ Envoyer ma note de frais';
+      btn.disabled=false;
+    } else {
+      throw new Error(data.error||'Erreur serveur');
+    }
+  } catch(e){
+    showToast('❌ Erreur lors de l\'envoi : '+e.message, true);
+    btn.innerHTML='✉ Envoyer ma note de frais';
+    btn.disabled=false;
+  }
+}
+
+function showToast(msg,err){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast '+(err?'error':'success'); t.style.display='block';
+  setTimeout(()=>t.style.display='none', 7000);
+}
+</script>
+</body>
+</html>
